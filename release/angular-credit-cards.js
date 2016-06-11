@@ -96,7 +96,7 @@ CardType.prototype.test = function (number, eager) {
   return this[eager ? 'eagerPattern' : 'pattern'].test(number)
 }
 
-},{"xtend/mutable":37}],5:[function(_dereq_,module,exports){
+},{"xtend/mutable":62}],5:[function(_dereq_,module,exports){
 'use strict'
 
 var Type = _dereq_('./type')
@@ -275,7 +275,7 @@ function isExpYearPast (year) {
   return new Date().getFullYear() > year
 }
 
-},{"is-valid-month":16,"parse-int":31,"parse-year":32}],10:[function(_dereq_,module,exports){
+},{"is-valid-month":16,"parse-int":56,"parse-year":57}],10:[function(_dereq_,module,exports){
 'use strict'
 
 var ccTypes = _dereq_('creditcards-types')
@@ -288,7 +288,7 @@ module.exports = extend(ccTypes, {
   }
 })
 
-},{"creditcards-types":3,"to-camel-case":33,"xtend":36}],11:[function(_dereq_,module,exports){
+},{"creditcards-types":3,"to-camel-case":58,"xtend":61}],11:[function(_dereq_,module,exports){
 'use strict'
 
 var zeroFill = _dereq_('zero-fill')
@@ -303,7 +303,7 @@ module.exports = function expandYear (year, now) {
   return parseIntStrict(base + pad(year))
 }
 
-},{"parse-int":31,"zero-fill":38}],12:[function(_dereq_,module,exports){
+},{"parse-int":56,"zero-fill":63}],12:[function(_dereq_,module,exports){
 'use strict'
 
 module.exports = (function (array) {
@@ -382,7 +382,7 @@ module.exports = Number.isFinite || function (val) {
 	return !(typeof val !== 'number' || numberIsNan(val) || val === Infinity || val === -Infinity);
 };
 
-},{"number-is-nan":30}],15:[function(_dereq_,module,exports){
+},{"number-is-nan":55}],15:[function(_dereq_,module,exports){
 // https://github.com/paulmillr/es6-shim
 // http://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.isinteger
 var isFinite = _dereq_("is-finite");
@@ -408,6 +408,146 @@ module.exports = Array.isArray || function (arr) {
 };
 
 },{}],18:[function(_dereq_,module,exports){
+/** Used as the `TypeError` message for "Functions" methods. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/* Native method references for those with the same name as other `lodash` methods. */
+var nativeMax = Math.max;
+
+/**
+ * Creates a function that invokes `func` with the `this` binding of the
+ * created function and arguments from `start` and beyond provided as an array.
+ *
+ * **Note:** This method is based on the [rest parameter](https://developer.mozilla.org/Web/JavaScript/Reference/Functions/rest_parameters).
+ *
+ * @static
+ * @memberOf _
+ * @category Function
+ * @param {Function} func The function to apply a rest parameter to.
+ * @param {number} [start=func.length-1] The start position of the rest parameter.
+ * @returns {Function} Returns the new function.
+ * @example
+ *
+ * var say = _.restParam(function(what, names) {
+ *   return what + ' ' + _.initial(names).join(', ') +
+ *     (_.size(names) > 1 ? ', & ' : '') + _.last(names);
+ * });
+ *
+ * say('hello', 'fred', 'barney', 'pebbles');
+ * // => 'hello fred, barney, & pebbles'
+ */
+function restParam(func, start) {
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  start = nativeMax(start === undefined ? (func.length - 1) : (+start || 0), 0);
+  return function() {
+    var args = arguments,
+        index = -1,
+        length = nativeMax(args.length - start, 0),
+        rest = Array(length);
+
+    while (++index < length) {
+      rest[index] = args[start + index];
+    }
+    switch (start) {
+      case 0: return func.call(this, rest);
+      case 1: return func.call(this, args[0], rest);
+      case 2: return func.call(this, args[0], args[1], rest);
+    }
+    var otherArgs = Array(start + 1);
+    index = -1;
+    while (++index < start) {
+      otherArgs[index] = args[index];
+    }
+    otherArgs[start] = rest;
+    return func.apply(this, otherArgs);
+  };
+}
+
+module.exports = restParam;
+
+},{}],19:[function(_dereq_,module,exports){
+var keys = _dereq_('../object/keys');
+
+/**
+ * A specialized version of `_.assign` for customizing assigned values without
+ * support for argument juggling, multiple sources, and `this` binding `customizer`
+ * functions.
+ *
+ * @private
+ * @param {Object} object The destination object.
+ * @param {Object} source The source object.
+ * @param {Function} customizer The function to customize assigned values.
+ * @returns {Object} Returns `object`.
+ */
+function assignWith(object, source, customizer) {
+  var index = -1,
+      props = keys(source),
+      length = props.length;
+
+  while (++index < length) {
+    var key = props[index],
+        value = object[key],
+        result = customizer(value, source[key], key, object, source);
+
+    if ((result === result ? (result !== value) : (value === value)) ||
+        (value === undefined && !(key in object))) {
+      object[key] = result;
+    }
+  }
+  return object;
+}
+
+module.exports = assignWith;
+
+},{"../object/keys":47}],20:[function(_dereq_,module,exports){
+var baseCopy = _dereq_('./baseCopy'),
+    keys = _dereq_('../object/keys');
+
+/**
+ * The base implementation of `_.assign` without support for argument juggling,
+ * multiple sources, and `customizer` functions.
+ *
+ * @private
+ * @param {Object} object The destination object.
+ * @param {Object} source The source object.
+ * @returns {Object} Returns `object`.
+ */
+function baseAssign(object, source) {
+  return source == null
+    ? object
+    : baseCopy(source, keys(source), object);
+}
+
+module.exports = baseAssign;
+
+},{"../object/keys":47,"./baseCopy":21}],21:[function(_dereq_,module,exports){
+/**
+ * Copies properties of `source` to `object`.
+ *
+ * @private
+ * @param {Object} source The object to copy properties from.
+ * @param {Array} props The property names to copy.
+ * @param {Object} [object={}] The object to copy properties to.
+ * @returns {Object} Returns `object`.
+ */
+function baseCopy(source, props, object) {
+  object || (object = {});
+
+  var index = -1,
+      length = props.length;
+
+  while (++index < length) {
+    var key = props[index];
+    object[key] = source[key];
+  }
+  return object;
+}
+
+module.exports = baseCopy;
+
+},{}],22:[function(_dereq_,module,exports){
 var toObject = _dereq_('./toObject');
 
 /**
@@ -438,7 +578,23 @@ function baseGet(object, path, pathKey) {
 
 module.exports = baseGet;
 
-},{"./toObject":23}],19:[function(_dereq_,module,exports){
+},{"./toObject":38}],23:[function(_dereq_,module,exports){
+/**
+ * The base implementation of `_.property` without support for deep paths.
+ *
+ * @private
+ * @param {string} key The key of the property to get.
+ * @returns {Function} Returns the new function.
+ */
+function baseProperty(key) {
+  return function(object) {
+    return object == null ? undefined : object[key];
+  };
+}
+
+module.exports = baseProperty;
+
+},{}],24:[function(_dereq_,module,exports){
 /**
  * Converts `value` to a string if it's not one. An empty string is returned
  * for `null` or `undefined` values.
@@ -453,7 +609,171 @@ function baseToString(value) {
 
 module.exports = baseToString;
 
-},{}],20:[function(_dereq_,module,exports){
+},{}],25:[function(_dereq_,module,exports){
+var identity = _dereq_('../utility/identity');
+
+/**
+ * A specialized version of `baseCallback` which only supports `this` binding
+ * and specifying the number of arguments to provide to `func`.
+ *
+ * @private
+ * @param {Function} func The function to bind.
+ * @param {*} thisArg The `this` binding of `func`.
+ * @param {number} [argCount] The number of arguments to provide to `func`.
+ * @returns {Function} Returns the callback.
+ */
+function bindCallback(func, thisArg, argCount) {
+  if (typeof func != 'function') {
+    return identity;
+  }
+  if (thisArg === undefined) {
+    return func;
+  }
+  switch (argCount) {
+    case 1: return function(value) {
+      return func.call(thisArg, value);
+    };
+    case 3: return function(value, index, collection) {
+      return func.call(thisArg, value, index, collection);
+    };
+    case 4: return function(accumulator, value, index, collection) {
+      return func.call(thisArg, accumulator, value, index, collection);
+    };
+    case 5: return function(value, other, key, object, source) {
+      return func.call(thisArg, value, other, key, object, source);
+    };
+  }
+  return function() {
+    return func.apply(thisArg, arguments);
+  };
+}
+
+module.exports = bindCallback;
+
+},{"../utility/identity":54}],26:[function(_dereq_,module,exports){
+var bindCallback = _dereq_('./bindCallback'),
+    isIterateeCall = _dereq_('./isIterateeCall'),
+    restParam = _dereq_('../function/restParam');
+
+/**
+ * Creates a `_.assign`, `_.defaults`, or `_.merge` function.
+ *
+ * @private
+ * @param {Function} assigner The function to assign values.
+ * @returns {Function} Returns the new assigner function.
+ */
+function createAssigner(assigner) {
+  return restParam(function(object, sources) {
+    var index = -1,
+        length = object == null ? 0 : sources.length,
+        customizer = length > 2 ? sources[length - 2] : undefined,
+        guard = length > 2 ? sources[2] : undefined,
+        thisArg = length > 1 ? sources[length - 1] : undefined;
+
+    if (typeof customizer == 'function') {
+      customizer = bindCallback(customizer, thisArg, 5);
+      length -= 2;
+    } else {
+      customizer = typeof thisArg == 'function' ? thisArg : undefined;
+      length -= (customizer ? 1 : 0);
+    }
+    if (guard && isIterateeCall(sources[0], sources[1], guard)) {
+      customizer = length < 3 ? undefined : customizer;
+      length = 1;
+    }
+    while (++index < length) {
+      var source = sources[index];
+      if (source) {
+        assigner(object, source, customizer);
+      }
+    }
+    return object;
+  });
+}
+
+module.exports = createAssigner;
+
+},{"../function/restParam":18,"./bindCallback":25,"./isIterateeCall":33}],27:[function(_dereq_,module,exports){
+var deburr = _dereq_('../string/deburr'),
+    words = _dereq_('../string/words');
+
+/**
+ * Creates a function that produces compound words out of the words in a
+ * given string.
+ *
+ * @private
+ * @param {Function} callback The function to combine each word.
+ * @returns {Function} Returns the new compounder function.
+ */
+function createCompounder(callback) {
+  return function(string) {
+    var index = -1,
+        array = words(deburr(string)),
+        length = array.length,
+        result = '';
+
+    while (++index < length) {
+      result = callback(result, array[index], index);
+    }
+    return result;
+  };
+}
+
+module.exports = createCompounder;
+
+},{"../string/deburr":51,"../string/words":53}],28:[function(_dereq_,module,exports){
+/** Used to map latin-1 supplementary letters to basic latin letters. */
+var deburredLetters = {
+  '\xc0': 'A',  '\xc1': 'A', '\xc2': 'A', '\xc3': 'A', '\xc4': 'A', '\xc5': 'A',
+  '\xe0': 'a',  '\xe1': 'a', '\xe2': 'a', '\xe3': 'a', '\xe4': 'a', '\xe5': 'a',
+  '\xc7': 'C',  '\xe7': 'c',
+  '\xd0': 'D',  '\xf0': 'd',
+  '\xc8': 'E',  '\xc9': 'E', '\xca': 'E', '\xcb': 'E',
+  '\xe8': 'e',  '\xe9': 'e', '\xea': 'e', '\xeb': 'e',
+  '\xcC': 'I',  '\xcd': 'I', '\xce': 'I', '\xcf': 'I',
+  '\xeC': 'i',  '\xed': 'i', '\xee': 'i', '\xef': 'i',
+  '\xd1': 'N',  '\xf1': 'n',
+  '\xd2': 'O',  '\xd3': 'O', '\xd4': 'O', '\xd5': 'O', '\xd6': 'O', '\xd8': 'O',
+  '\xf2': 'o',  '\xf3': 'o', '\xf4': 'o', '\xf5': 'o', '\xf6': 'o', '\xf8': 'o',
+  '\xd9': 'U',  '\xda': 'U', '\xdb': 'U', '\xdc': 'U',
+  '\xf9': 'u',  '\xfa': 'u', '\xfb': 'u', '\xfc': 'u',
+  '\xdd': 'Y',  '\xfd': 'y', '\xff': 'y',
+  '\xc6': 'Ae', '\xe6': 'ae',
+  '\xde': 'Th', '\xfe': 'th',
+  '\xdf': 'ss'
+};
+
+/**
+ * Used by `_.deburr` to convert latin-1 supplementary letters to basic latin letters.
+ *
+ * @private
+ * @param {string} letter The matched letter to deburr.
+ * @returns {string} Returns the deburred letter.
+ */
+function deburrLetter(letter) {
+  return deburredLetters[letter];
+}
+
+module.exports = deburrLetter;
+
+},{}],29:[function(_dereq_,module,exports){
+var baseProperty = _dereq_('./baseProperty');
+
+/**
+ * Gets the "length" property value of `object`.
+ *
+ * **Note:** This function is used to avoid a [JIT bug](https://bugs.webkit.org/show_bug.cgi?id=142792)
+ * that affects Safari on at least iOS 8.1-8.3 ARM64.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {*} Returns the "length" value.
+ */
+var getLength = baseProperty('length');
+
+module.exports = getLength;
+
+},{"./baseProperty":23}],30:[function(_dereq_,module,exports){
 var isNative = _dereq_('../lang/isNative');
 
 /**
@@ -471,7 +791,110 @@ function getNative(object, key) {
 
 module.exports = getNative;
 
-},{"../lang/isNative":27}],21:[function(_dereq_,module,exports){
+},{"../lang/isNative":43}],31:[function(_dereq_,module,exports){
+var getLength = _dereq_('./getLength'),
+    isLength = _dereq_('./isLength');
+
+/**
+ * Checks if `value` is array-like.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
+ */
+function isArrayLike(value) {
+  return value != null && isLength(getLength(value));
+}
+
+module.exports = isArrayLike;
+
+},{"./getLength":29,"./isLength":35}],32:[function(_dereq_,module,exports){
+/** Used to detect unsigned integer values. */
+var reIsUint = /^\d+$/;
+
+/**
+ * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
+ * of an array-like value.
+ */
+var MAX_SAFE_INTEGER = 9007199254740991;
+
+/**
+ * Checks if `value` is a valid array-like index.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+ * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+ */
+function isIndex(value, length) {
+  value = (typeof value == 'number' || reIsUint.test(value)) ? +value : -1;
+  length = length == null ? MAX_SAFE_INTEGER : length;
+  return value > -1 && value % 1 == 0 && value < length;
+}
+
+module.exports = isIndex;
+
+},{}],33:[function(_dereq_,module,exports){
+var isArrayLike = _dereq_('./isArrayLike'),
+    isIndex = _dereq_('./isIndex'),
+    isObject = _dereq_('../lang/isObject');
+
+/**
+ * Checks if the provided arguments are from an iteratee call.
+ *
+ * @private
+ * @param {*} value The potential iteratee value argument.
+ * @param {*} index The potential iteratee index or key argument.
+ * @param {*} object The potential iteratee object argument.
+ * @returns {boolean} Returns `true` if the arguments are from an iteratee call, else `false`.
+ */
+function isIterateeCall(value, index, object) {
+  if (!isObject(object)) {
+    return false;
+  }
+  var type = typeof index;
+  if (type == 'number'
+      ? (isArrayLike(object) && isIndex(index, object.length))
+      : (type == 'string' && index in object)) {
+    var other = object[index];
+    return value === value ? (value === other) : (other !== other);
+  }
+  return false;
+}
+
+module.exports = isIterateeCall;
+
+},{"../lang/isObject":44,"./isArrayLike":31,"./isIndex":32}],34:[function(_dereq_,module,exports){
+var isArray = _dereq_('../lang/isArray'),
+    toObject = _dereq_('./toObject');
+
+/** Used to match property names within property paths. */
+var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\n\\]|\\.)*?\1)\]/,
+    reIsPlainProp = /^\w*$/;
+
+/**
+ * Checks if `value` is a property name and not a property path.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @param {Object} [object] The object to query keys on.
+ * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
+ */
+function isKey(value, object) {
+  var type = typeof value;
+  if ((type == 'string' && reIsPlainProp.test(value)) || type == 'number') {
+    return true;
+  }
+  if (isArray(value)) {
+    return false;
+  }
+  var result = !reIsDeepProp.test(value);
+  return result || (object != null && value in toObject(object));
+}
+
+module.exports = isKey;
+
+},{"../lang/isArray":41,"./toObject":38}],35:[function(_dereq_,module,exports){
 /**
  * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
  * of an array-like value.
@@ -493,7 +916,7 @@ function isLength(value) {
 
 module.exports = isLength;
 
-},{}],22:[function(_dereq_,module,exports){
+},{}],36:[function(_dereq_,module,exports){
 /**
  * Checks if `value` is object-like.
  *
@@ -507,7 +930,50 @@ function isObjectLike(value) {
 
 module.exports = isObjectLike;
 
-},{}],23:[function(_dereq_,module,exports){
+},{}],37:[function(_dereq_,module,exports){
+var isArguments = _dereq_('../lang/isArguments'),
+    isArray = _dereq_('../lang/isArray'),
+    isIndex = _dereq_('./isIndex'),
+    isLength = _dereq_('./isLength'),
+    keysIn = _dereq_('../object/keysIn');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * A fallback implementation of `Object.keys` which creates an array of the
+ * own enumerable property names of `object`.
+ *
+ * @private
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ */
+function shimKeys(object) {
+  var props = keysIn(object),
+      propsLength = props.length,
+      length = propsLength && object.length;
+
+  var allowIndexes = !!length && isLength(length) &&
+    (isArray(object) || isArguments(object));
+
+  var index = -1,
+      result = [];
+
+  while (++index < propsLength) {
+    var key = props[index];
+    if ((allowIndexes && isIndex(key, length)) || hasOwnProperty.call(object, key)) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+module.exports = shimKeys;
+
+},{"../lang/isArguments":40,"../lang/isArray":41,"../object/keysIn":48,"./isIndex":32,"./isLength":35}],38:[function(_dereq_,module,exports){
 var isObject = _dereq_('../lang/isObject');
 
 /**
@@ -523,7 +989,7 @@ function toObject(value) {
 
 module.exports = toObject;
 
-},{"../lang/isObject":28}],24:[function(_dereq_,module,exports){
+},{"../lang/isObject":44}],39:[function(_dereq_,module,exports){
 var baseToString = _dereq_('./baseToString'),
     isArray = _dereq_('../lang/isArray');
 
@@ -553,7 +1019,43 @@ function toPath(value) {
 
 module.exports = toPath;
 
-},{"../lang/isArray":25,"./baseToString":19}],25:[function(_dereq_,module,exports){
+},{"../lang/isArray":41,"./baseToString":24}],40:[function(_dereq_,module,exports){
+var isArrayLike = _dereq_('../internal/isArrayLike'),
+    isObjectLike = _dereq_('../internal/isObjectLike');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/** Native method references. */
+var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+
+/**
+ * Checks if `value` is classified as an `arguments` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isArguments(function() { return arguments; }());
+ * // => true
+ *
+ * _.isArguments([1, 2, 3]);
+ * // => false
+ */
+function isArguments(value) {
+  return isObjectLike(value) && isArrayLike(value) &&
+    hasOwnProperty.call(value, 'callee') && !propertyIsEnumerable.call(value, 'callee');
+}
+
+module.exports = isArguments;
+
+},{"../internal/isArrayLike":31,"../internal/isObjectLike":36}],41:[function(_dereq_,module,exports){
 var getNative = _dereq_('../internal/getNative'),
     isLength = _dereq_('../internal/isLength'),
     isObjectLike = _dereq_('../internal/isObjectLike');
@@ -595,7 +1097,7 @@ var isArray = nativeIsArray || function(value) {
 
 module.exports = isArray;
 
-},{"../internal/getNative":20,"../internal/isLength":21,"../internal/isObjectLike":22}],26:[function(_dereq_,module,exports){
+},{"../internal/getNative":30,"../internal/isLength":35,"../internal/isObjectLike":36}],42:[function(_dereq_,module,exports){
 var isObject = _dereq_('./isObject');
 
 /** `Object#toString` result references. */
@@ -635,7 +1137,7 @@ function isFunction(value) {
 
 module.exports = isFunction;
 
-},{"./isObject":28}],27:[function(_dereq_,module,exports){
+},{"./isObject":44}],43:[function(_dereq_,module,exports){
 var isFunction = _dereq_('./isFunction'),
     isObjectLike = _dereq_('../internal/isObjectLike');
 
@@ -685,7 +1187,7 @@ function isNative(value) {
 
 module.exports = isNative;
 
-},{"../internal/isObjectLike":22,"./isFunction":26}],28:[function(_dereq_,module,exports){
+},{"../internal/isObjectLike":36,"./isFunction":42}],44:[function(_dereq_,module,exports){
 /**
  * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
  * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
@@ -715,7 +1217,52 @@ function isObject(value) {
 
 module.exports = isObject;
 
-},{}],29:[function(_dereq_,module,exports){
+},{}],45:[function(_dereq_,module,exports){
+var assignWith = _dereq_('../internal/assignWith'),
+    baseAssign = _dereq_('../internal/baseAssign'),
+    createAssigner = _dereq_('../internal/createAssigner');
+
+/**
+ * Assigns own enumerable properties of source object(s) to the destination
+ * object. Subsequent sources overwrite property assignments of previous sources.
+ * If `customizer` is provided it's invoked to produce the assigned values.
+ * The `customizer` is bound to `thisArg` and invoked with five arguments:
+ * (objectValue, sourceValue, key, object, source).
+ *
+ * **Note:** This method mutates `object` and is based on
+ * [`Object.assign`](http://ecma-international.org/ecma-262/6.0/#sec-object.assign).
+ *
+ * @static
+ * @memberOf _
+ * @alias extend
+ * @category Object
+ * @param {Object} object The destination object.
+ * @param {...Object} [sources] The source objects.
+ * @param {Function} [customizer] The function to customize assigned values.
+ * @param {*} [thisArg] The `this` binding of `customizer`.
+ * @returns {Object} Returns `object`.
+ * @example
+ *
+ * _.assign({ 'user': 'barney' }, { 'age': 40 }, { 'user': 'fred' });
+ * // => { 'user': 'fred', 'age': 40 }
+ *
+ * // using a customizer callback
+ * var defaults = _.partialRight(_.assign, function(value, other) {
+ *   return _.isUndefined(value) ? other : value;
+ * });
+ *
+ * defaults({ 'user': 'barney' }, { 'age': 36 }, { 'user': 'fred' });
+ * // => { 'user': 'barney', 'age': 36 }
+ */
+var assign = createAssigner(function(object, source, customizer) {
+  return customizer
+    ? assignWith(object, source, customizer)
+    : baseAssign(object, source);
+});
+
+module.exports = assign;
+
+},{"../internal/assignWith":19,"../internal/baseAssign":20,"../internal/createAssigner":26}],46:[function(_dereq_,module,exports){
 var baseGet = _dereq_('../internal/baseGet'),
     toPath = _dereq_('../internal/toPath');
 
@@ -750,13 +1297,333 @@ function get(object, path, defaultValue) {
 
 module.exports = get;
 
-},{"../internal/baseGet":18,"../internal/toPath":24}],30:[function(_dereq_,module,exports){
+},{"../internal/baseGet":22,"../internal/toPath":39}],47:[function(_dereq_,module,exports){
+var getNative = _dereq_('../internal/getNative'),
+    isArrayLike = _dereq_('../internal/isArrayLike'),
+    isObject = _dereq_('../lang/isObject'),
+    shimKeys = _dereq_('../internal/shimKeys');
+
+/* Native method references for those with the same name as other `lodash` methods. */
+var nativeKeys = getNative(Object, 'keys');
+
+/**
+ * Creates an array of the own enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects. See the
+ * [ES spec](http://ecma-international.org/ecma-262/6.0/#sec-object.keys)
+ * for more details.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keys(new Foo);
+ * // => ['a', 'b'] (iteration order is not guaranteed)
+ *
+ * _.keys('hi');
+ * // => ['0', '1']
+ */
+var keys = !nativeKeys ? shimKeys : function(object) {
+  var Ctor = object == null ? undefined : object.constructor;
+  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
+      (typeof object != 'function' && isArrayLike(object))) {
+    return shimKeys(object);
+  }
+  return isObject(object) ? nativeKeys(object) : [];
+};
+
+module.exports = keys;
+
+},{"../internal/getNative":30,"../internal/isArrayLike":31,"../internal/shimKeys":37,"../lang/isObject":44}],48:[function(_dereq_,module,exports){
+var isArguments = _dereq_('../lang/isArguments'),
+    isArray = _dereq_('../lang/isArray'),
+    isIndex = _dereq_('../internal/isIndex'),
+    isLength = _dereq_('../internal/isLength'),
+    isObject = _dereq_('../lang/isObject');
+
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
+/**
+ * Creates an array of the own and inherited enumerable property names of `object`.
+ *
+ * **Note:** Non-object values are coerced to objects.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to query.
+ * @returns {Array} Returns the array of property names.
+ * @example
+ *
+ * function Foo() {
+ *   this.a = 1;
+ *   this.b = 2;
+ * }
+ *
+ * Foo.prototype.c = 3;
+ *
+ * _.keysIn(new Foo);
+ * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
+ */
+function keysIn(object) {
+  if (object == null) {
+    return [];
+  }
+  if (!isObject(object)) {
+    object = Object(object);
+  }
+  var length = object.length;
+  length = (length && isLength(length) &&
+    (isArray(object) || isArguments(object)) && length) || 0;
+
+  var Ctor = object.constructor,
+      index = -1,
+      isProto = typeof Ctor == 'function' && Ctor.prototype === object,
+      result = Array(length),
+      skipIndexes = length > 0;
+
+  while (++index < length) {
+    result[index] = (index + '');
+  }
+  for (var key in object) {
+    if (!(skipIndexes && isIndex(key, length)) &&
+        !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
+      result.push(key);
+    }
+  }
+  return result;
+}
+
+module.exports = keysIn;
+
+},{"../internal/isIndex":32,"../internal/isLength":35,"../lang/isArguments":40,"../lang/isArray":41,"../lang/isObject":44}],49:[function(_dereq_,module,exports){
+var isIndex = _dereq_('../internal/isIndex'),
+    isKey = _dereq_('../internal/isKey'),
+    isObject = _dereq_('../lang/isObject'),
+    toPath = _dereq_('../internal/toPath');
+
+/**
+ * Sets the property value of `path` on `object`. If a portion of `path`
+ * does not exist it's created.
+ *
+ * @static
+ * @memberOf _
+ * @category Object
+ * @param {Object} object The object to augment.
+ * @param {Array|string} path The path of the property to set.
+ * @param {*} value The value to set.
+ * @returns {Object} Returns `object`.
+ * @example
+ *
+ * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+ *
+ * _.set(object, 'a[0].b.c', 4);
+ * console.log(object.a[0].b.c);
+ * // => 4
+ *
+ * _.set(object, 'x[0].y.z', 5);
+ * console.log(object.x[0].y.z);
+ * // => 5
+ */
+function set(object, path, value) {
+  if (object == null) {
+    return object;
+  }
+  var pathKey = (path + '');
+  path = (object[pathKey] != null || isKey(path, object)) ? [pathKey] : toPath(path);
+
+  var index = -1,
+      length = path.length,
+      lastIndex = length - 1,
+      nested = object;
+
+  while (nested != null && ++index < length) {
+    var key = path[index];
+    if (isObject(nested)) {
+      if (index == lastIndex) {
+        nested[key] = value;
+      } else if (nested[key] == null) {
+        nested[key] = isIndex(path[index + 1]) ? [] : {};
+      }
+    }
+    nested = nested[key];
+  }
+  return object;
+}
+
+module.exports = set;
+
+},{"../internal/isIndex":32,"../internal/isKey":34,"../internal/toPath":39,"../lang/isObject":44}],50:[function(_dereq_,module,exports){
+var createCompounder = _dereq_('../internal/createCompounder');
+
+/**
+ * Converts `string` to [camel case](https://en.wikipedia.org/wiki/CamelCase).
+ *
+ * @static
+ * @memberOf _
+ * @category String
+ * @param {string} [string=''] The string to convert.
+ * @returns {string} Returns the camel cased string.
+ * @example
+ *
+ * _.camelCase('Foo Bar');
+ * // => 'fooBar'
+ *
+ * _.camelCase('--foo-bar');
+ * // => 'fooBar'
+ *
+ * _.camelCase('__foo_bar__');
+ * // => 'fooBar'
+ */
+var camelCase = createCompounder(function(result, word, index) {
+  word = word.toLowerCase();
+  return result + (index ? (word.charAt(0).toUpperCase() + word.slice(1)) : word);
+});
+
+module.exports = camelCase;
+
+},{"../internal/createCompounder":27}],51:[function(_dereq_,module,exports){
+var baseToString = _dereq_('../internal/baseToString'),
+    deburrLetter = _dereq_('../internal/deburrLetter');
+
+/** Used to match [combining diacritical marks](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks). */
+var reComboMark = /[\u0300-\u036f\ufe20-\ufe23]/g;
+
+/** Used to match latin-1 supplementary letters (excluding mathematical operators). */
+var reLatin1 = /[\xc0-\xd6\xd8-\xde\xdf-\xf6\xf8-\xff]/g;
+
+/**
+ * Deburrs `string` by converting [latin-1 supplementary letters](https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)#Character_table)
+ * to basic latin letters and removing [combining diacritical marks](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks).
+ *
+ * @static
+ * @memberOf _
+ * @category String
+ * @param {string} [string=''] The string to deburr.
+ * @returns {string} Returns the deburred string.
+ * @example
+ *
+ * _.deburr('déjà vu');
+ * // => 'deja vu'
+ */
+function deburr(string) {
+  string = baseToString(string);
+  return string && string.replace(reLatin1, deburrLetter).replace(reComboMark, '');
+}
+
+module.exports = deburr;
+
+},{"../internal/baseToString":24,"../internal/deburrLetter":28}],52:[function(_dereq_,module,exports){
+var createCompounder = _dereq_('../internal/createCompounder');
+
+/**
+ * Converts `string` to [start case](https://en.wikipedia.org/wiki/Letter_case#Stylistic_or_specialised_usage).
+ *
+ * @static
+ * @memberOf _
+ * @category String
+ * @param {string} [string=''] The string to convert.
+ * @returns {string} Returns the start cased string.
+ * @example
+ *
+ * _.startCase('--foo-bar');
+ * // => 'Foo Bar'
+ *
+ * _.startCase('fooBar');
+ * // => 'Foo Bar'
+ *
+ * _.startCase('__foo_bar__');
+ * // => 'Foo Bar'
+ */
+var startCase = createCompounder(function(result, word, index) {
+  return result + (index ? ' ' : '') + (word.charAt(0).toUpperCase() + word.slice(1));
+});
+
+module.exports = startCase;
+
+},{"../internal/createCompounder":27}],53:[function(_dereq_,module,exports){
+var baseToString = _dereq_('../internal/baseToString'),
+    isIterateeCall = _dereq_('../internal/isIterateeCall');
+
+/** Used to match words to create compound words. */
+var reWords = (function() {
+  var upper = '[A-Z\\xc0-\\xd6\\xd8-\\xde]',
+      lower = '[a-z\\xdf-\\xf6\\xf8-\\xff]+';
+
+  return RegExp(upper + '+(?=' + upper + lower + ')|' + upper + '?' + lower + '|' + upper + '+|[0-9]+', 'g');
+}());
+
+/**
+ * Splits `string` into an array of its words.
+ *
+ * @static
+ * @memberOf _
+ * @category String
+ * @param {string} [string=''] The string to inspect.
+ * @param {RegExp|string} [pattern] The pattern to match words.
+ * @param- {Object} [guard] Enables use as a callback for functions like `_.map`.
+ * @returns {Array} Returns the words of `string`.
+ * @example
+ *
+ * _.words('fred, barney, & pebbles');
+ * // => ['fred', 'barney', 'pebbles']
+ *
+ * _.words('fred, barney, & pebbles', /[^, ]+/g);
+ * // => ['fred', 'barney', '&', 'pebbles']
+ */
+function words(string, pattern, guard) {
+  if (guard && isIterateeCall(string, pattern, guard)) {
+    pattern = undefined;
+  }
+  string = baseToString(string);
+  return string.match(pattern || reWords) || [];
+}
+
+module.exports = words;
+
+},{"../internal/baseToString":24,"../internal/isIterateeCall":33}],54:[function(_dereq_,module,exports){
+/**
+ * This method returns the first argument provided to it.
+ *
+ * @static
+ * @memberOf _
+ * @category Utility
+ * @param {*} value Any value.
+ * @returns {*} Returns `value`.
+ * @example
+ *
+ * var object = { 'user': 'fred' };
+ *
+ * _.identity(object) === object;
+ * // => true
+ */
+function identity(value) {
+  return value;
+}
+
+module.exports = identity;
+
+},{}],55:[function(_dereq_,module,exports){
 'use strict';
 module.exports = Number.isNaN || function (x) {
 	return x !== x;
 };
 
-},{}],31:[function(_dereq_,module,exports){
+},{}],56:[function(_dereq_,module,exports){
 'use strict'
 
 var isInteger = _dereq_('is-integer')
@@ -770,7 +1637,7 @@ module.exports = function parseIntStrict (integer) {
   }
 }
 
-},{"is-integer":15}],32:[function(_dereq_,module,exports){
+},{"is-integer":15}],57:[function(_dereq_,module,exports){
 'use strict'
 
 var parseIntStrict = _dereq_('parse-int')
@@ -783,7 +1650,7 @@ module.exports = function parseYear (year, expand, now) {
   return expandYear(year, now)
 }
 
-},{"expand-year":11,"parse-int":31}],33:[function(_dereq_,module,exports){
+},{"expand-year":11,"parse-int":56}],58:[function(_dereq_,module,exports){
 
 var space = _dereq_('to-space-case')
 
@@ -806,7 +1673,7 @@ function toCamelCase(string) {
   })
 }
 
-},{"to-space-case":35}],34:[function(_dereq_,module,exports){
+},{"to-space-case":60}],59:[function(_dereq_,module,exports){
 
 /**
  * Export.
@@ -875,7 +1742,7 @@ function uncamelize(string) {
   })
 }
 
-},{}],35:[function(_dereq_,module,exports){
+},{}],60:[function(_dereq_,module,exports){
 
 var clean = _dereq_('to-no-case')
 
@@ -898,7 +1765,7 @@ function toSpaceCase(string) {
   }).trim()
 }
 
-},{"to-no-case":34}],36:[function(_dereq_,module,exports){
+},{"to-no-case":59}],61:[function(_dereq_,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -919,7 +1786,7 @@ function extend() {
     return target
 }
 
-},{}],37:[function(_dereq_,module,exports){
+},{}],62:[function(_dereq_,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -938,7 +1805,7 @@ function extend(target) {
     return target
 }
 
-},{}],38:[function(_dereq_,module,exports){
+},{}],63:[function(_dereq_,module,exports){
 /**
  * Given a number, return a zero-filled string.
  * From http://stackoverflow.com/questions/1267283/
@@ -958,7 +1825,7 @@ module.exports = function zeroFill (width, number, pad) {
   return number + ''
 }
 
-},{}],39:[function(_dereq_,module,exports){
+},{}],64:[function(_dereq_,module,exports){
 'use strict'
 
 var cvc = _dereq_('creditcards').cvc
@@ -983,10 +1850,12 @@ function factory ($parse, ccType) {
         }
 
         if (attributes.ccType) {
+          ccType.initializeCvcInput(ngModel)
           scope.$watch(attributes.ccType, function () {
             var newType = $parse(attributes.ccType)(scope)
             var cvcLength = ccType.getCvcLength(newType) || baseMaxLength
             attributes.$set('maxlength', cvcLength)
+            ccType.truncateCvc(ngModel, cvcLength)
             bind.call(ngModel.$validate, ngModel)()
           })
         }
@@ -995,7 +1864,7 @@ function factory ($parse, ccType) {
   }
 }
 
-},{"creditcards":6,"function-bind":13}],40:[function(_dereq_,module,exports){
+},{"creditcards":6,"function-bind":13}],65:[function(_dereq_,module,exports){
 'use strict'
 
 var expiration = _dereq_('creditcards').expiration
@@ -1110,7 +1979,7 @@ exports.year = function ccExpYear () {
 
 function noop () {}
 
-},{"ap":1,"creditcards":6}],41:[function(_dereq_,module,exports){
+},{"ap":1,"creditcards":6}],66:[function(_dereq_,module,exports){
 'use strict'
 
 var card = _dereq_('creditcards').card
@@ -1205,12 +2074,21 @@ function factory ($parse) {
   }
 }
 
-},{"ap":1,"cast-array":2,"creditcards":6}],42:[function(_dereq_,module,exports){
+},{"ap":1,"cast-array":2,"creditcards":6}],67:[function(_dereq_,module,exports){
 'use strict'
 
 var get = _dereq_('lodash/object/get')
+var set = _dereq_('lodash/object/set')
+var assign = _dereq_('lodash/object/assign')
+var camel = _dereq_('lodash/string/camelCase')
+var start = _dereq_('lodash/string/startCase')
 var types = _dereq_('creditcards').card.types
 var Type = types.Type
+var cardTypes = types.types
+
+var _cvcTruncateMode = false
+var _storingLongValue = false
+var CVC_TRUNCATE_MODES = [ false, "eager", "conservative" ]
 
 module.exports = provider
 
@@ -1220,11 +2098,96 @@ function Service () {
     var cardType = types.get(type)
     return get(cardType, 'cvcLength')
   }
+
+  function _isConservative() {
+    return _cvcTruncateMode === 'conservative'
+  }
+
+  function _isEager() {
+    return _cvcTruncateMode === 'eager'
+  }
+
+  function _isNoTruncate() {
+    return !_cvcTruncateMode
+  }
+
+  function _truncate (str, length) {
+    return str.substr(0, length)
+  }
+
+  this.truncateCvc = function truncateCvc (ngModel, cvcLength) {
+    var keyOfStrToTruncate
+    if (_isNoTruncate() || !ngModel.$viewValue) {
+      return
+    }
+    if (cvcLength < ngModel.$viewValue.length) {
+      if (_isConservative()) {
+        if (_storingLongValue) {
+          _storingLongValue = false
+        } else {
+          ngModel.$ccLongValue = String(ngModel.$viewValue)
+        }
+      }
+      keyOfStrToTruncate = '$viewValue'
+    } else if (_isConservative() && ngModel.$ccLongValue) {
+      keyOfStrToTruncate = '$ccLongValue'
+    }
+    if (!keyOfStrToTruncate) {
+      return
+    }
+    ngModel.$setViewValue(_truncate(ngModel[keyOfStrToTruncate], cvcLength))
+    ngModel.$render()
+  }
+
+  function _clearLongCvc (ngModel) {
+    delete ngModel.$ccLongValue
+  }
+
+  this.initializeCvcInput = function initializeCvcInput (ngModel) {
+    if (!_isConservative()) {
+      return
+    }
+    ngModel.$parsers.push(function (viewValue) {
+      if (ngModel.$ccLongValue) {
+        if (!_storingLongValue) {
+          _storingLongValue = true
+        } else {
+          _storingLongValue = false
+          if (viewValue !== ngModel.$ccLongValue) {
+            _clearLongCvc(ngModel)
+          }
+        }
+      }
+      return viewValue
+    })
+  }
 }
 
 function provider () {
   this.setType = function setType (name, config) {
-    return new Type(name, config)
+    var key = camel(name)
+    name = start(name)
+    var oldType = get(cardTypes, key)
+    if (oldType) {
+      assign(oldType, config)
+    } else {
+      set(cardTypes, key, new Type(name, config))
+    }
+    return this
+  }
+
+  //When ccType changes on ccCvc directive,
+  //_cvcTruncateMode determines modelValue/viewValue change behavior if the new
+  //maxLength is shorter.
+  //false -> ngModel.$viewValue && ngModel.$modelValue are unchanged
+  //"eager" -> ngModel.$viewValue && ngModel.$modelValue are truncated
+  //"conservative" -> ngModel.$viewValue is truncated and will change back to the
+  //ngModel.$modelValue if the maxLength is changed back to a greater value
+  this.cvcTruncateMode = function cvcTruncateMode (mode) {
+    if (CVC_TRUNCATE_MODES.indexOf(mode) > -1) {
+      _cvcTruncateMode = mode
+    }
+    return this
   }
 
   this.$get = function () {
@@ -1232,7 +2195,7 @@ function provider () {
   }
 }
 
-},{"creditcards":6,"lodash/object/get":29}],43:[function(_dereq_,module,exports){
+},{"creditcards":6,"lodash/object/assign":45,"lodash/object/get":46,"lodash/object/set":49,"lodash/string/camelCase":50,"lodash/string/startCase":52}],68:[function(_dereq_,module,exports){
 (function (global){
 'use strict'
 
@@ -1255,5 +2218,5 @@ module.exports = angular
   .name
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./cvc":39,"./expiration":40,"./number":41,"./type":42,"creditcards":6}]},{},[43])(43)
+},{"./cvc":64,"./expiration":65,"./number":66,"./type":67,"creditcards":6}]},{},[68])(68)
 });
