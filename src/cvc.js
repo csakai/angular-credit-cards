@@ -2,16 +2,17 @@
 
 var cvc = require('creditcards').cvc
 var bind = require('function-bind')
+var baseMaxLength = 4
 
 module.exports = factory
 
-factory.$inject = ['$parse']
-function factory ($parse) {
+factory.$inject = ['$parse', 'ccType']
+function factory ($parse, ccType) {
   return {
     restrict: 'A',
     require: 'ngModel',
     compile: function (element, attributes) {
-      attributes.$set('maxlength', 4)
+      attributes.$set('maxlength', baseMaxLength)
       attributes.$set('pattern', '[0-9]*')
       attributes.$set('xAutocompletetype', 'cc-csc')
 
@@ -21,7 +22,10 @@ function factory ($parse) {
         }
 
         if (attributes.ccType) {
-          scope.$watch(attributes.ccType, bind.call(ngModel.$validate, ngModel))
+          scope.$watch(attributes.ccType, function() {
+            attributes.$set('maxlength', ccType.getCvcLength($parse(attributes.ccType)(scope)) || baseMaxLength)
+            bind.call(ngModel.$validate, ngModel)()
+          })
         }
       }
     }
