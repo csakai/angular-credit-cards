@@ -88,7 +88,7 @@ Enforcing a specific card type chosen with a `<select>`:
 
 ```html
 <input type="text" ng-model="card.cvc" cc-cvc ng-required="true" />
-<input type="text" ng-model="card.cvc" cc-type="cardNumber.$ccType" ng-required="true" />
+<input type="text" ng-model="card.cvc" cc-cvc cc-type="cardNumber.$ccType" ng-required="true" />
 ```
 
 * Sets `maxlength="4"`
