@@ -5,6 +5,7 @@ var creditcards = require('creditcards')
 var number = require('./number')
 var cvc = require('./cvc')
 var expiration = require('./expiration')
+var type = require('./type')
 
 module.exports = angular
   .module('credit-cards', [])
@@ -14,4 +15,5 @@ module.exports = angular
   .directive('ccExpMonth', expiration.month)
   .directive('ccExpYear', expiration.year)
   .directive('ccCvc', cvc)
+  .service('ccType', type)
   .name
