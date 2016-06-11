@@ -22,8 +22,10 @@ function factory ($parse, ccType) {
         }
 
         if (attributes.ccType) {
-          scope.$watch(attributes.ccType, function() {
-            attributes.$set('maxlength', ccType.getCvcLength($parse(attributes.ccType)(scope)) || baseMaxLength)
+          scope.$watch(attributes.ccType, function () {
+            var newType = $parse(attributes.ccType)(scope)
+            var cvcLength = ccType.getCvcLength(newType) || baseMaxLength
+            attributes.$set('maxlength', cvcLength)
             bind.call(ngModel.$validate, ngModel)()
           })
         }
