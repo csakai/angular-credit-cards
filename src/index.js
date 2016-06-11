@@ -15,5 +15,5 @@ module.exports = angular
   .directive('ccExpMonth', expiration.month)
   .directive('ccExpYear', expiration.year)
   .directive('ccCvc', cvc)
-  .service('ccType', type)
+  .provider('ccType', type)
   .name
