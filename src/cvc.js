@@ -1,7 +1,6 @@
 'use strict'
 
 var cvc = require('creditcards').cvc
-var bind = require('function-bind')
 var baseMaxLength = 4
 
 module.exports = factory
@@ -28,7 +27,7 @@ function factory ($parse, ccType) {
             var cvcLength = ccType.getCvcLength(newType) || baseMaxLength
             attributes.$set('maxlength', cvcLength)
             ccType.truncateCvc(ngModel, cvcLength)
-            bind.call(ngModel.$validate, ngModel)()
+            ngModel.$validate()
           })
         }
       }
