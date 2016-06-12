@@ -11,7 +11,7 @@ var cardTypes = types.types
 
 var _cvcTruncateMode = false
 var _storingLongValue = false
-var CVC_TRUNCATE_MODES = [ false, "eager", "conservative" ]
+var CVC_TRUNCATE_MODES = [ false, 'eager', 'conservative' ]
 
 module.exports = provider
 
@@ -22,15 +22,15 @@ function Service () {
     return get(cardType, 'cvcLength')
   }
 
-  function _isConservative() {
+  function _isConservative () {
     return _cvcTruncateMode === 'conservative'
   }
 
-  function _isEager() {
-    return _cvcTruncateMode === 'eager'
-  }
+  // function _isEager () {
+  //   return _cvcTruncateMode === 'eager'
+  // }
 
-  function _isNoTruncate() {
+  function _isNoTruncate () {
     return !_cvcTruncateMode
   }
 
@@ -99,13 +99,13 @@ function provider () {
     return this
   }
 
-  //When ccType changes on ccCvc directive,
-  //_cvcTruncateMode determines modelValue/viewValue change behavior if the new
-  //maxLength is shorter.
-  //false -> ngModel.$viewValue && ngModel.$modelValue are unchanged
-  //"eager" -> ngModel.$viewValue && ngModel.$modelValue are truncated
-  //"conservative" -> ngModel.$viewValue is truncated and will change back to the
-  //ngModel.$modelValue if the maxLength is changed back to a greater value
+  // When ccType changes on ccCvc directive,
+  // _cvcTruncateMode determines modelValue/viewValue change behavior if the new
+  // maxLength is shorter.
+  // false -> ngModel.$viewValue && ngModel.$modelValue are unchanged
+  // "eager" -> ngModel.$viewValue && ngModel.$modelValue are truncated
+  // "conservative" -> ngModel.$viewValue is truncated and will change back to the
+  // ngModel.$modelValue if the maxLength is changed back to a greater value
   this.cvcTruncateMode = function cvcTruncateMode (mode) {
     if (CVC_TRUNCATE_MODES.indexOf(mode) > -1) {
       _cvcTruncateMode = mode
