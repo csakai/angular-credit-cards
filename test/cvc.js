@@ -1,16 +1,34 @@
 'use strict'
 
-/*global describe, beforeEach, it*/
+/*global global, describe, beforeEach, afterEach, it*/
 
 var expect = require('chai').expect
 var angular = require('angular')
+var every = require('lodash/collection/every')
 require('angular-mocks/ngMock')
+if (!global.sandbox) {
+  global.sandbox = require('sinon').sandbox.create()
+}
 
+function match (obj1, obj2) {
+  if (Object.keys(obj1).length > Object.keys(obj2).length) {
+    return match(obj2, obj1)
+  }
+  return every(obj1, function (val, key) {
+    return obj2[key] === val
+  })
+}
 describe('cc-cvc', function () {
   beforeEach(angular.mock.module(require('../')))
+  beforeEach(angular.mock.module(require('../mock/type.mock')))
 
-  var $compile, scope, controller, element
+  afterEach(function () {
+    global.sandbox.restore()
+  })
+
+  var $compile, scope, controller, element, ccType
   beforeEach(angular.mock.inject(function ($injector) {
+    ccType = $injector.get('ccType')
     $compile = $injector.get('$compile')
     scope = $injector.get('$rootScope').$new()
     scope.card = {}
@@ -62,10 +80,23 @@ describe('cc-cvc', function () {
     expect(scope.card.cvc).to.be.undefined
   })
 
+  it('does not call ccType.initializeCvcInput when there is no ccType attribute', function () {
+    scope.$digest()
+    expect(ccType.initializeCvcInput).to.not.have.been.called
+  })
+
   describe('ccType', function () {
     beforeEach(function () {
       element.attr('cc-type', 'cardType')
       controller = $compile(element)(scope).controller('ngModel')
+    })
+
+    it('calls ccType.initializeCvcInput with ngModel', function () {
+      var arg0
+      scope.$digest()
+      expect(ccType.initializeCvcInput).to.have.been.calledOnce
+      arg0 = ccType.initializeCvcInput.getCall(0).args[0]
+      expect(match(controller, arg0)).to.be.true
     })
 
     it('validates against the card type', function () {
@@ -78,6 +109,37 @@ describe('cc-cvc', function () {
       expect(controller.$valid).to.be.true
     })
 
-  })
+    it('calls ccType.getCvcLength with new type', function () {
+      var newType = 'visa'
+      scope.cardType = newType
+      scope.$digest()
+      expect(ccType.getCvcLength).to.have.been.calledOnce
+        .and.calledWithExactly(newType)
+    })
 
+    it('sets the maxlength attribute with the new cvc length', function () {
+      var newLength = '3'
+      var attrMaxLength
+      ccType.mock.initGetCvcLength(newLength)
+      scope.cardType = 'visa'
+      scope.$digest()
+      attrMaxLength = element.attr('maxlength')
+      expect(ccType.getCvcLength).to.have.been.calledOnce
+        .and.returned(newLength)
+      expect(attrMaxLength).to.eql(newLength)
+    })
+
+    it('calls ccType.truncateCvc with ngModel and newLength', function () {
+      var newLength = '3'
+      var arg0
+      ccType.mock.initGetCvcLength(newLength)
+      newLength = parseInt(newLength, 10)
+      scope.cardType = 'visa'
+      scope.$digest()
+      arg0 = ccType.truncateCvc.getCall(0).args[0]
+      expect(ccType.truncateCvc).to.have.been.calledOnce
+      expect(match(controller, arg0)).to.be.true
+    })
+
+  })
 })
