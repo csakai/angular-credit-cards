@@ -57,7 +57,7 @@ module.exports = function castArray (value) {
   return isArray(value) ? value : [value]
 }
 
-},{"isarray":17}],3:[function(_dereq_,module,exports){
+},{"isarray":16}],3:[function(_dereq_,module,exports){
 'use strict'
 
 var types = exports.types = _dereq_('./src/types')
@@ -96,7 +96,7 @@ CardType.prototype.test = function (number, eager) {
   return this[eager ? 'eagerPattern' : 'pattern'].test(number)
 }
 
-},{"xtend/mutable":62}],5:[function(_dereq_,module,exports){
+},{"xtend/mutable":52}],5:[function(_dereq_,module,exports){
 'use strict'
 
 var Type = _dereq_('./type')
@@ -275,7 +275,7 @@ function isExpYearPast (year) {
   return new Date().getFullYear() > year
 }
 
-},{"is-valid-month":16,"parse-int":56,"parse-year":57}],10:[function(_dereq_,module,exports){
+},{"is-valid-month":15,"parse-int":46,"parse-year":47}],10:[function(_dereq_,module,exports){
 'use strict'
 
 var ccTypes = _dereq_('creditcards-types')
@@ -288,7 +288,7 @@ module.exports = extend(ccTypes, {
   }
 })
 
-},{"creditcards-types":3,"to-camel-case":58,"xtend":61}],11:[function(_dereq_,module,exports){
+},{"creditcards-types":3,"to-camel-case":48,"xtend":51}],11:[function(_dereq_,module,exports){
 'use strict'
 
 var zeroFill = _dereq_('zero-fill')
@@ -303,7 +303,7 @@ module.exports = function expandYear (year, now) {
   return parseIntStrict(base + pad(year))
 }
 
-},{"parse-int":56,"zero-fill":63}],12:[function(_dereq_,module,exports){
+},{"parse-int":46,"zero-fill":53}],12:[function(_dereq_,module,exports){
 'use strict'
 
 module.exports = (function (array) {
@@ -325,56 +325,6 @@ module.exports = (function (array) {
 }([0, 2, 4, 6, 8, 1, 3, 5, 7, 9]))
 
 },{}],13:[function(_dereq_,module,exports){
-var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
-var slice = Array.prototype.slice;
-var toStr = Object.prototype.toString;
-var funcType = '[object Function]';
-
-module.exports = function bind(that) {
-    var target = this;
-    if (typeof target !== 'function' || toStr.call(target) !== funcType) {
-        throw new TypeError(ERROR_MESSAGE + target);
-    }
-    var args = slice.call(arguments, 1);
-
-    var binder = function () {
-        if (this instanceof bound) {
-            var result = target.apply(
-                this,
-                args.concat(slice.call(arguments))
-            );
-            if (Object(result) === result) {
-                return result;
-            }
-            return this;
-        } else {
-            return target.apply(
-                that,
-                args.concat(slice.call(arguments))
-            );
-        }
-    };
-
-    var boundLength = Math.max(0, target.length - args.length);
-    var boundArgs = [];
-    for (var i = 0; i < boundLength; i++) {
-        boundArgs.push('$' + i);
-    }
-
-    var bound = Function('binder', 'return function (' + boundArgs.join(',') + '){ return binder.apply(this,arguments); }')(binder);
-
-    if (target.prototype) {
-        var Empty = function Empty() {};
-        Empty.prototype = target.prototype;
-        bound.prototype = new Empty();
-        Empty.prototype = null;
-    }
-
-    return bound;
-};
-
-
-},{}],14:[function(_dereq_,module,exports){
 'use strict';
 var numberIsNan = _dereq_('number-is-nan');
 
@@ -382,7 +332,7 @@ module.exports = Number.isFinite || function (val) {
 	return !(typeof val !== 'number' || numberIsNan(val) || val === Infinity || val === -Infinity);
 };
 
-},{"number-is-nan":55}],15:[function(_dereq_,module,exports){
+},{"number-is-nan":45}],14:[function(_dereq_,module,exports){
 // https://github.com/paulmillr/es6-shim
 // http://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.isinteger
 var isFinite = _dereq_("is-finite");
@@ -392,7 +342,7 @@ module.exports = Number.isInteger || function(val) {
     Math.floor(val) === val;
 };
 
-},{"is-finite":14}],16:[function(_dereq_,module,exports){
+},{"is-finite":13}],15:[function(_dereq_,module,exports){
 'use strict'
 
 var isInteger = _dereq_('is-integer')
@@ -402,152 +352,33 @@ module.exports = function isValidMonth (month) {
   return month >= 1 && month <= 12
 }
 
-},{"is-integer":15}],17:[function(_dereq_,module,exports){
+},{"is-integer":14}],16:[function(_dereq_,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],18:[function(_dereq_,module,exports){
-/** Used as the `TypeError` message for "Functions" methods. */
-var FUNC_ERROR_TEXT = 'Expected a function';
-
-/* Native method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max;
-
+},{}],17:[function(_dereq_,module,exports){
 /**
- * Creates a function that invokes `func` with the `this` binding of the
- * created function and arguments from `start` and beyond provided as an array.
- *
- * **Note:** This method is based on the [rest parameter](https://developer.mozilla.org/Web/JavaScript/Reference/Functions/rest_parameters).
+ * Gets the last element of `array`.
  *
  * @static
  * @memberOf _
- * @category Function
- * @param {Function} func The function to apply a rest parameter to.
- * @param {number} [start=func.length-1] The start position of the rest parameter.
- * @returns {Function} Returns the new function.
+ * @category Array
+ * @param {Array} array The array to query.
+ * @returns {*} Returns the last element of `array`.
  * @example
  *
- * var say = _.restParam(function(what, names) {
- *   return what + ' ' + _.initial(names).join(', ') +
- *     (_.size(names) > 1 ? ', & ' : '') + _.last(names);
- * });
- *
- * say('hello', 'fred', 'barney', 'pebbles');
- * // => 'hello fred, barney, & pebbles'
+ * _.last([1, 2, 3]);
+ * // => 3
  */
-function restParam(func, start) {
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  start = nativeMax(start === undefined ? (func.length - 1) : (+start || 0), 0);
-  return function() {
-    var args = arguments,
-        index = -1,
-        length = nativeMax(args.length - start, 0),
-        rest = Array(length);
-
-    while (++index < length) {
-      rest[index] = args[start + index];
-    }
-    switch (start) {
-      case 0: return func.call(this, rest);
-      case 1: return func.call(this, args[0], rest);
-      case 2: return func.call(this, args[0], args[1], rest);
-    }
-    var otherArgs = Array(start + 1);
-    index = -1;
-    while (++index < start) {
-      otherArgs[index] = args[index];
-    }
-    otherArgs[start] = rest;
-    return func.apply(this, otherArgs);
-  };
+function last(array) {
+  var length = array ? array.length : 0;
+  return length ? array[length - 1] : undefined;
 }
 
-module.exports = restParam;
+module.exports = last;
 
-},{}],19:[function(_dereq_,module,exports){
-var keys = _dereq_('../object/keys');
-
-/**
- * A specialized version of `_.assign` for customizing assigned values without
- * support for argument juggling, multiple sources, and `this` binding `customizer`
- * functions.
- *
- * @private
- * @param {Object} object The destination object.
- * @param {Object} source The source object.
- * @param {Function} customizer The function to customize assigned values.
- * @returns {Object} Returns `object`.
- */
-function assignWith(object, source, customizer) {
-  var index = -1,
-      props = keys(source),
-      length = props.length;
-
-  while (++index < length) {
-    var key = props[index],
-        value = object[key],
-        result = customizer(value, source[key], key, object, source);
-
-    if ((result === result ? (result !== value) : (value === value)) ||
-        (value === undefined && !(key in object))) {
-      object[key] = result;
-    }
-  }
-  return object;
-}
-
-module.exports = assignWith;
-
-},{"../object/keys":47}],20:[function(_dereq_,module,exports){
-var baseCopy = _dereq_('./baseCopy'),
-    keys = _dereq_('../object/keys');
-
-/**
- * The base implementation of `_.assign` without support for argument juggling,
- * multiple sources, and `customizer` functions.
- *
- * @private
- * @param {Object} object The destination object.
- * @param {Object} source The source object.
- * @returns {Object} Returns `object`.
- */
-function baseAssign(object, source) {
-  return source == null
-    ? object
-    : baseCopy(source, keys(source), object);
-}
-
-module.exports = baseAssign;
-
-},{"../object/keys":47,"./baseCopy":21}],21:[function(_dereq_,module,exports){
-/**
- * Copies properties of `source` to `object`.
- *
- * @private
- * @param {Object} source The object to copy properties from.
- * @param {Array} props The property names to copy.
- * @param {Object} [object={}] The object to copy properties to.
- * @returns {Object} Returns `object`.
- */
-function baseCopy(source, props, object) {
-  object || (object = {});
-
-  var index = -1,
-      length = props.length;
-
-  while (++index < length) {
-    var key = props[index];
-    object[key] = source[key];
-  }
-  return object;
-}
-
-module.exports = baseCopy;
-
-},{}],22:[function(_dereq_,module,exports){
+},{}],18:[function(_dereq_,module,exports){
 var toObject = _dereq_('./toObject');
 
 /**
@@ -578,7 +409,7 @@ function baseGet(object, path, pathKey) {
 
 module.exports = baseGet;
 
-},{"./toObject":38}],23:[function(_dereq_,module,exports){
+},{"./toObject":32}],19:[function(_dereq_,module,exports){
 /**
  * The base implementation of `_.property` without support for deep paths.
  *
@@ -594,7 +425,41 @@ function baseProperty(key) {
 
 module.exports = baseProperty;
 
-},{}],24:[function(_dereq_,module,exports){
+},{}],20:[function(_dereq_,module,exports){
+/**
+ * The base implementation of `_.slice` without an iteratee call guard.
+ *
+ * @private
+ * @param {Array} array The array to slice.
+ * @param {number} [start=0] The start position.
+ * @param {number} [end=array.length] The end position.
+ * @returns {Array} Returns the slice of `array`.
+ */
+function baseSlice(array, start, end) {
+  var index = -1,
+      length = array.length;
+
+  start = start == null ? 0 : (+start || 0);
+  if (start < 0) {
+    start = -start > length ? 0 : (length + start);
+  }
+  end = (end === undefined || end > length) ? length : (+end || 0);
+  if (end < 0) {
+    end += length;
+  }
+  length = start > end ? 0 : ((end - start) >>> 0);
+  start >>>= 0;
+
+  var result = Array(length);
+  while (++index < length) {
+    result[index] = array[index + start];
+  }
+  return result;
+}
+
+module.exports = baseSlice;
+
+},{}],21:[function(_dereq_,module,exports){
 /**
  * Converts `value` to a string if it's not one. An empty string is returned
  * for `null` or `undefined` values.
@@ -609,91 +474,7 @@ function baseToString(value) {
 
 module.exports = baseToString;
 
-},{}],25:[function(_dereq_,module,exports){
-var identity = _dereq_('../utility/identity');
-
-/**
- * A specialized version of `baseCallback` which only supports `this` binding
- * and specifying the number of arguments to provide to `func`.
- *
- * @private
- * @param {Function} func The function to bind.
- * @param {*} thisArg The `this` binding of `func`.
- * @param {number} [argCount] The number of arguments to provide to `func`.
- * @returns {Function} Returns the callback.
- */
-function bindCallback(func, thisArg, argCount) {
-  if (typeof func != 'function') {
-    return identity;
-  }
-  if (thisArg === undefined) {
-    return func;
-  }
-  switch (argCount) {
-    case 1: return function(value) {
-      return func.call(thisArg, value);
-    };
-    case 3: return function(value, index, collection) {
-      return func.call(thisArg, value, index, collection);
-    };
-    case 4: return function(accumulator, value, index, collection) {
-      return func.call(thisArg, accumulator, value, index, collection);
-    };
-    case 5: return function(value, other, key, object, source) {
-      return func.call(thisArg, value, other, key, object, source);
-    };
-  }
-  return function() {
-    return func.apply(thisArg, arguments);
-  };
-}
-
-module.exports = bindCallback;
-
-},{"../utility/identity":54}],26:[function(_dereq_,module,exports){
-var bindCallback = _dereq_('./bindCallback'),
-    isIterateeCall = _dereq_('./isIterateeCall'),
-    restParam = _dereq_('../function/restParam');
-
-/**
- * Creates a `_.assign`, `_.defaults`, or `_.merge` function.
- *
- * @private
- * @param {Function} assigner The function to assign values.
- * @returns {Function} Returns the new assigner function.
- */
-function createAssigner(assigner) {
-  return restParam(function(object, sources) {
-    var index = -1,
-        length = object == null ? 0 : sources.length,
-        customizer = length > 2 ? sources[length - 2] : undefined,
-        guard = length > 2 ? sources[2] : undefined,
-        thisArg = length > 1 ? sources[length - 1] : undefined;
-
-    if (typeof customizer == 'function') {
-      customizer = bindCallback(customizer, thisArg, 5);
-      length -= 2;
-    } else {
-      customizer = typeof thisArg == 'function' ? thisArg : undefined;
-      length -= (customizer ? 1 : 0);
-    }
-    if (guard && isIterateeCall(sources[0], sources[1], guard)) {
-      customizer = length < 3 ? undefined : customizer;
-      length = 1;
-    }
-    while (++index < length) {
-      var source = sources[index];
-      if (source) {
-        assigner(object, source, customizer);
-      }
-    }
-    return object;
-  });
-}
-
-module.exports = createAssigner;
-
-},{"../function/restParam":18,"./bindCallback":25,"./isIterateeCall":33}],27:[function(_dereq_,module,exports){
+},{}],22:[function(_dereq_,module,exports){
 var deburr = _dereq_('../string/deburr'),
     words = _dereq_('../string/words');
 
@@ -721,7 +502,7 @@ function createCompounder(callback) {
 
 module.exports = createCompounder;
 
-},{"../string/deburr":51,"../string/words":53}],28:[function(_dereq_,module,exports){
+},{"../string/deburr":43,"../string/words":44}],23:[function(_dereq_,module,exports){
 /** Used to map latin-1 supplementary letters to basic latin letters. */
 var deburredLetters = {
   '\xc0': 'A',  '\xc1': 'A', '\xc2': 'A', '\xc3': 'A', '\xc4': 'A', '\xc5': 'A',
@@ -756,7 +537,7 @@ function deburrLetter(letter) {
 
 module.exports = deburrLetter;
 
-},{}],29:[function(_dereq_,module,exports){
+},{}],24:[function(_dereq_,module,exports){
 var baseProperty = _dereq_('./baseProperty');
 
 /**
@@ -773,7 +554,7 @@ var getLength = baseProperty('length');
 
 module.exports = getLength;
 
-},{"./baseProperty":23}],30:[function(_dereq_,module,exports){
+},{"./baseProperty":19}],25:[function(_dereq_,module,exports){
 var isNative = _dereq_('../lang/isNative');
 
 /**
@@ -791,7 +572,7 @@ function getNative(object, key) {
 
 module.exports = getNative;
 
-},{"../lang/isNative":43}],31:[function(_dereq_,module,exports){
+},{"../lang/isNative":37}],26:[function(_dereq_,module,exports){
 var getLength = _dereq_('./getLength'),
     isLength = _dereq_('./isLength');
 
@@ -808,7 +589,7 @@ function isArrayLike(value) {
 
 module.exports = isArrayLike;
 
-},{"./getLength":29,"./isLength":35}],32:[function(_dereq_,module,exports){
+},{"./getLength":24,"./isLength":30}],27:[function(_dereq_,module,exports){
 /** Used to detect unsigned integer values. */
 var reIsUint = /^\d+$/;
 
@@ -834,7 +615,7 @@ function isIndex(value, length) {
 
 module.exports = isIndex;
 
-},{}],33:[function(_dereq_,module,exports){
+},{}],28:[function(_dereq_,module,exports){
 var isArrayLike = _dereq_('./isArrayLike'),
     isIndex = _dereq_('./isIndex'),
     isObject = _dereq_('../lang/isObject');
@@ -864,7 +645,7 @@ function isIterateeCall(value, index, object) {
 
 module.exports = isIterateeCall;
 
-},{"../lang/isObject":44,"./isArrayLike":31,"./isIndex":32}],34:[function(_dereq_,module,exports){
+},{"../lang/isObject":38,"./isArrayLike":26,"./isIndex":27}],29:[function(_dereq_,module,exports){
 var isArray = _dereq_('../lang/isArray'),
     toObject = _dereq_('./toObject');
 
@@ -894,7 +675,7 @@ function isKey(value, object) {
 
 module.exports = isKey;
 
-},{"../lang/isArray":41,"./toObject":38}],35:[function(_dereq_,module,exports){
+},{"../lang/isArray":35,"./toObject":32}],30:[function(_dereq_,module,exports){
 /**
  * Used as the [maximum length](http://ecma-international.org/ecma-262/6.0/#sec-number.max_safe_integer)
  * of an array-like value.
@@ -916,7 +697,7 @@ function isLength(value) {
 
 module.exports = isLength;
 
-},{}],36:[function(_dereq_,module,exports){
+},{}],31:[function(_dereq_,module,exports){
 /**
  * Checks if `value` is object-like.
  *
@@ -930,50 +711,7 @@ function isObjectLike(value) {
 
 module.exports = isObjectLike;
 
-},{}],37:[function(_dereq_,module,exports){
-var isArguments = _dereq_('../lang/isArguments'),
-    isArray = _dereq_('../lang/isArray'),
-    isIndex = _dereq_('./isIndex'),
-    isLength = _dereq_('./isLength'),
-    keysIn = _dereq_('../object/keysIn');
-
-/** Used for native method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * A fallback implementation of `Object.keys` which creates an array of the
- * own enumerable property names of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names.
- */
-function shimKeys(object) {
-  var props = keysIn(object),
-      propsLength = props.length,
-      length = propsLength && object.length;
-
-  var allowIndexes = !!length && isLength(length) &&
-    (isArray(object) || isArguments(object));
-
-  var index = -1,
-      result = [];
-
-  while (++index < propsLength) {
-    var key = props[index];
-    if ((allowIndexes && isIndex(key, length)) || hasOwnProperty.call(object, key)) {
-      result.push(key);
-    }
-  }
-  return result;
-}
-
-module.exports = shimKeys;
-
-},{"../lang/isArguments":40,"../lang/isArray":41,"../object/keysIn":48,"./isIndex":32,"./isLength":35}],38:[function(_dereq_,module,exports){
+},{}],32:[function(_dereq_,module,exports){
 var isObject = _dereq_('../lang/isObject');
 
 /**
@@ -989,7 +727,7 @@ function toObject(value) {
 
 module.exports = toObject;
 
-},{"../lang/isObject":44}],39:[function(_dereq_,module,exports){
+},{"../lang/isObject":38}],33:[function(_dereq_,module,exports){
 var baseToString = _dereq_('./baseToString'),
     isArray = _dereq_('../lang/isArray');
 
@@ -1019,7 +757,7 @@ function toPath(value) {
 
 module.exports = toPath;
 
-},{"../lang/isArray":41,"./baseToString":24}],40:[function(_dereq_,module,exports){
+},{"../lang/isArray":35,"./baseToString":21}],34:[function(_dereq_,module,exports){
 var isArrayLike = _dereq_('../internal/isArrayLike'),
     isObjectLike = _dereq_('../internal/isObjectLike');
 
@@ -1055,7 +793,7 @@ function isArguments(value) {
 
 module.exports = isArguments;
 
-},{"../internal/isArrayLike":31,"../internal/isObjectLike":36}],41:[function(_dereq_,module,exports){
+},{"../internal/isArrayLike":26,"../internal/isObjectLike":31}],35:[function(_dereq_,module,exports){
 var getNative = _dereq_('../internal/getNative'),
     isLength = _dereq_('../internal/isLength'),
     isObjectLike = _dereq_('../internal/isObjectLike');
@@ -1097,7 +835,7 @@ var isArray = nativeIsArray || function(value) {
 
 module.exports = isArray;
 
-},{"../internal/getNative":30,"../internal/isLength":35,"../internal/isObjectLike":36}],42:[function(_dereq_,module,exports){
+},{"../internal/getNative":25,"../internal/isLength":30,"../internal/isObjectLike":31}],36:[function(_dereq_,module,exports){
 var isObject = _dereq_('./isObject');
 
 /** `Object#toString` result references. */
@@ -1137,7 +875,7 @@ function isFunction(value) {
 
 module.exports = isFunction;
 
-},{"./isObject":44}],43:[function(_dereq_,module,exports){
+},{"./isObject":38}],37:[function(_dereq_,module,exports){
 var isFunction = _dereq_('./isFunction'),
     isObjectLike = _dereq_('../internal/isObjectLike');
 
@@ -1187,7 +925,7 @@ function isNative(value) {
 
 module.exports = isNative;
 
-},{"../internal/isObjectLike":36,"./isFunction":42}],44:[function(_dereq_,module,exports){
+},{"../internal/isObjectLike":31,"./isFunction":36}],38:[function(_dereq_,module,exports){
 /**
  * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
  * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
@@ -1217,134 +955,66 @@ function isObject(value) {
 
 module.exports = isObject;
 
-},{}],45:[function(_dereq_,module,exports){
-var assignWith = _dereq_('../internal/assignWith'),
-    baseAssign = _dereq_('../internal/baseAssign'),
-    createAssigner = _dereq_('../internal/createAssigner');
-
-/**
- * Assigns own enumerable properties of source object(s) to the destination
- * object. Subsequent sources overwrite property assignments of previous sources.
- * If `customizer` is provided it's invoked to produce the assigned values.
- * The `customizer` is bound to `thisArg` and invoked with five arguments:
- * (objectValue, sourceValue, key, object, source).
- *
- * **Note:** This method mutates `object` and is based on
- * [`Object.assign`](http://ecma-international.org/ecma-262/6.0/#sec-object.assign).
- *
- * @static
- * @memberOf _
- * @alias extend
- * @category Object
- * @param {Object} object The destination object.
- * @param {...Object} [sources] The source objects.
- * @param {Function} [customizer] The function to customize assigned values.
- * @param {*} [thisArg] The `this` binding of `customizer`.
- * @returns {Object} Returns `object`.
- * @example
- *
- * _.assign({ 'user': 'barney' }, { 'age': 40 }, { 'user': 'fred' });
- * // => { 'user': 'fred', 'age': 40 }
- *
- * // using a customizer callback
- * var defaults = _.partialRight(_.assign, function(value, other) {
- *   return _.isUndefined(value) ? other : value;
- * });
- *
- * defaults({ 'user': 'barney' }, { 'age': 36 }, { 'user': 'fred' });
- * // => { 'user': 'barney', 'age': 36 }
- */
-var assign = createAssigner(function(object, source, customizer) {
-  return customizer
-    ? assignWith(object, source, customizer)
-    : baseAssign(object, source);
-});
-
-module.exports = assign;
-
-},{"../internal/assignWith":19,"../internal/baseAssign":20,"../internal/createAssigner":26}],46:[function(_dereq_,module,exports){
+},{}],39:[function(_dereq_,module,exports){
 var baseGet = _dereq_('../internal/baseGet'),
+    baseSlice = _dereq_('../internal/baseSlice'),
+    isArguments = _dereq_('../lang/isArguments'),
+    isArray = _dereq_('../lang/isArray'),
+    isIndex = _dereq_('../internal/isIndex'),
+    isKey = _dereq_('../internal/isKey'),
+    isLength = _dereq_('../internal/isLength'),
+    last = _dereq_('../array/last'),
     toPath = _dereq_('../internal/toPath');
 
+/** Used for native method references. */
+var objectProto = Object.prototype;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
+
 /**
- * Gets the property value at `path` of `object`. If the resolved value is
- * `undefined` the `defaultValue` is used in its place.
+ * Checks if `path` is a direct property.
  *
  * @static
  * @memberOf _
  * @category Object
  * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @param {*} [defaultValue] The value returned if the resolved value is `undefined`.
- * @returns {*} Returns the resolved value.
+ * @param {Array|string} path The path to check.
+ * @returns {boolean} Returns `true` if `path` is a direct property, else `false`.
  * @example
  *
- * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+ * var object = { 'a': { 'b': { 'c': 3 } } };
  *
- * _.get(object, 'a[0].b.c');
- * // => 3
+ * _.has(object, 'a');
+ * // => true
  *
- * _.get(object, ['a', '0', 'b', 'c']);
- * // => 3
+ * _.has(object, 'a.b.c');
+ * // => true
  *
- * _.get(object, 'a.b.c', 'default');
- * // => 'default'
+ * _.has(object, ['a', 'b', 'c']);
+ * // => true
  */
-function get(object, path, defaultValue) {
-  var result = object == null ? undefined : baseGet(object, toPath(path), (path + ''));
-  return result === undefined ? defaultValue : result;
+function has(object, path) {
+  if (object == null) {
+    return false;
+  }
+  var result = hasOwnProperty.call(object, path);
+  if (!result && !isKey(path)) {
+    path = toPath(path);
+    object = path.length == 1 ? object : baseGet(object, baseSlice(path, 0, -1));
+    if (object == null) {
+      return false;
+    }
+    path = last(path);
+    result = hasOwnProperty.call(object, path);
+  }
+  return result || (isLength(object.length) && isIndex(path, object.length) &&
+    (isArray(object) || isArguments(object)));
 }
 
-module.exports = get;
+module.exports = has;
 
-},{"../internal/baseGet":22,"../internal/toPath":39}],47:[function(_dereq_,module,exports){
-var getNative = _dereq_('../internal/getNative'),
-    isArrayLike = _dereq_('../internal/isArrayLike'),
-    isObject = _dereq_('../lang/isObject'),
-    shimKeys = _dereq_('../internal/shimKeys');
-
-/* Native method references for those with the same name as other `lodash` methods. */
-var nativeKeys = getNative(Object, 'keys');
-
-/**
- * Creates an array of the own enumerable property names of `object`.
- *
- * **Note:** Non-object values are coerced to objects. See the
- * [ES spec](http://ecma-international.org/ecma-262/6.0/#sec-object.keys)
- * for more details.
- *
- * @static
- * @memberOf _
- * @category Object
- * @param {Object} object The object to query.
- * @returns {Array} Returns the array of property names.
- * @example
- *
- * function Foo() {
- *   this.a = 1;
- *   this.b = 2;
- * }
- *
- * Foo.prototype.c = 3;
- *
- * _.keys(new Foo);
- * // => ['a', 'b'] (iteration order is not guaranteed)
- *
- * _.keys('hi');
- * // => ['0', '1']
- */
-var keys = !nativeKeys ? shimKeys : function(object) {
-  var Ctor = object == null ? undefined : object.constructor;
-  if ((typeof Ctor == 'function' && Ctor.prototype === object) ||
-      (typeof object != 'function' && isArrayLike(object))) {
-    return shimKeys(object);
-  }
-  return isObject(object) ? nativeKeys(object) : [];
-};
-
-module.exports = keys;
-
-},{"../internal/getNative":30,"../internal/isArrayLike":31,"../internal/shimKeys":37,"../lang/isObject":44}],48:[function(_dereq_,module,exports){
+},{"../array/last":17,"../internal/baseGet":18,"../internal/baseSlice":20,"../internal/isIndex":27,"../internal/isKey":29,"../internal/isLength":30,"../internal/toPath":33,"../lang/isArguments":34,"../lang/isArray":35}],40:[function(_dereq_,module,exports){
 var isArguments = _dereq_('../lang/isArguments'),
     isArray = _dereq_('../lang/isArray'),
     isIndex = _dereq_('../internal/isIndex'),
@@ -1410,7 +1080,7 @@ function keysIn(object) {
 
 module.exports = keysIn;
 
-},{"../internal/isIndex":32,"../internal/isLength":35,"../lang/isArguments":40,"../lang/isArray":41,"../lang/isObject":44}],49:[function(_dereq_,module,exports){
+},{"../internal/isIndex":27,"../internal/isLength":30,"../lang/isArguments":34,"../lang/isArray":35,"../lang/isObject":38}],41:[function(_dereq_,module,exports){
 var isIndex = _dereq_('../internal/isIndex'),
     isKey = _dereq_('../internal/isKey'),
     isObject = _dereq_('../lang/isObject'),
@@ -1467,7 +1137,7 @@ function set(object, path, value) {
 
 module.exports = set;
 
-},{"../internal/isIndex":32,"../internal/isKey":34,"../internal/toPath":39,"../lang/isObject":44}],50:[function(_dereq_,module,exports){
+},{"../internal/isIndex":27,"../internal/isKey":29,"../internal/toPath":33,"../lang/isObject":38}],42:[function(_dereq_,module,exports){
 var createCompounder = _dereq_('../internal/createCompounder');
 
 /**
@@ -1496,7 +1166,7 @@ var camelCase = createCompounder(function(result, word, index) {
 
 module.exports = camelCase;
 
-},{"../internal/createCompounder":27}],51:[function(_dereq_,module,exports){
+},{"../internal/createCompounder":22}],43:[function(_dereq_,module,exports){
 var baseToString = _dereq_('../internal/baseToString'),
     deburrLetter = _dereq_('../internal/deburrLetter');
 
@@ -1527,35 +1197,7 @@ function deburr(string) {
 
 module.exports = deburr;
 
-},{"../internal/baseToString":24,"../internal/deburrLetter":28}],52:[function(_dereq_,module,exports){
-var createCompounder = _dereq_('../internal/createCompounder');
-
-/**
- * Converts `string` to [start case](https://en.wikipedia.org/wiki/Letter_case#Stylistic_or_specialised_usage).
- *
- * @static
- * @memberOf _
- * @category String
- * @param {string} [string=''] The string to convert.
- * @returns {string} Returns the start cased string.
- * @example
- *
- * _.startCase('--foo-bar');
- * // => 'Foo Bar'
- *
- * _.startCase('fooBar');
- * // => 'Foo Bar'
- *
- * _.startCase('__foo_bar__');
- * // => 'Foo Bar'
- */
-var startCase = createCompounder(function(result, word, index) {
-  return result + (index ? ' ' : '') + (word.charAt(0).toUpperCase() + word.slice(1));
-});
-
-module.exports = startCase;
-
-},{"../internal/createCompounder":27}],53:[function(_dereq_,module,exports){
+},{"../internal/baseToString":21,"../internal/deburrLetter":23}],44:[function(_dereq_,module,exports){
 var baseToString = _dereq_('../internal/baseToString'),
     isIterateeCall = _dereq_('../internal/isIterateeCall');
 
@@ -1595,35 +1237,13 @@ function words(string, pattern, guard) {
 
 module.exports = words;
 
-},{"../internal/baseToString":24,"../internal/isIterateeCall":33}],54:[function(_dereq_,module,exports){
-/**
- * This method returns the first argument provided to it.
- *
- * @static
- * @memberOf _
- * @category Utility
- * @param {*} value Any value.
- * @returns {*} Returns `value`.
- * @example
- *
- * var object = { 'user': 'fred' };
- *
- * _.identity(object) === object;
- * // => true
- */
-function identity(value) {
-  return value;
-}
-
-module.exports = identity;
-
-},{}],55:[function(_dereq_,module,exports){
+},{"../internal/baseToString":21,"../internal/isIterateeCall":28}],45:[function(_dereq_,module,exports){
 'use strict';
 module.exports = Number.isNaN || function (x) {
 	return x !== x;
 };
 
-},{}],56:[function(_dereq_,module,exports){
+},{}],46:[function(_dereq_,module,exports){
 'use strict'
 
 var isInteger = _dereq_('is-integer')
@@ -1637,7 +1257,7 @@ module.exports = function parseIntStrict (integer) {
   }
 }
 
-},{"is-integer":15}],57:[function(_dereq_,module,exports){
+},{"is-integer":14}],47:[function(_dereq_,module,exports){
 'use strict'
 
 var parseIntStrict = _dereq_('parse-int')
@@ -1650,7 +1270,7 @@ module.exports = function parseYear (year, expand, now) {
   return expandYear(year, now)
 }
 
-},{"expand-year":11,"parse-int":56}],58:[function(_dereq_,module,exports){
+},{"expand-year":11,"parse-int":46}],48:[function(_dereq_,module,exports){
 
 var space = _dereq_('to-space-case')
 
@@ -1673,7 +1293,7 @@ function toCamelCase(string) {
   })
 }
 
-},{"to-space-case":60}],59:[function(_dereq_,module,exports){
+},{"to-space-case":50}],49:[function(_dereq_,module,exports){
 
 /**
  * Export.
@@ -1742,7 +1362,7 @@ function uncamelize(string) {
   })
 }
 
-},{}],60:[function(_dereq_,module,exports){
+},{}],50:[function(_dereq_,module,exports){
 
 var clean = _dereq_('to-no-case')
 
@@ -1765,7 +1385,7 @@ function toSpaceCase(string) {
   }).trim()
 }
 
-},{"to-no-case":59}],61:[function(_dereq_,module,exports){
+},{"to-no-case":49}],51:[function(_dereq_,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1786,7 +1406,7 @@ function extend() {
     return target
 }
 
-},{}],62:[function(_dereq_,module,exports){
+},{}],52:[function(_dereq_,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1805,7 +1425,7 @@ function extend(target) {
     return target
 }
 
-},{}],63:[function(_dereq_,module,exports){
+},{}],53:[function(_dereq_,module,exports){
 /**
  * Given a number, return a zero-filled string.
  * From http://stackoverflow.com/questions/1267283/
@@ -1825,11 +1445,10 @@ module.exports = function zeroFill (width, number, pad) {
   return number + ''
 }
 
-},{}],64:[function(_dereq_,module,exports){
+},{}],54:[function(_dereq_,module,exports){
 'use strict'
 
 var cvc = _dereq_('creditcards').cvc
-var bind = _dereq_('function-bind')
 var baseMaxLength = 4
 
 module.exports = factory
@@ -1856,7 +1475,7 @@ function factory ($parse, ccType) {
             var cvcLength = ccType.getCvcLength(newType) || baseMaxLength
             attributes.$set('maxlength', cvcLength)
             ccType.truncateCvc(ngModel, cvcLength)
-            bind.call(ngModel.$validate, ngModel)()
+            ngModel.$validate()
           })
         }
       }
@@ -1864,7 +1483,7 @@ function factory ($parse, ccType) {
   }
 }
 
-},{"creditcards":6,"function-bind":13}],65:[function(_dereq_,module,exports){
+},{"creditcards":6}],55:[function(_dereq_,module,exports){
 'use strict'
 
 var expiration = _dereq_('creditcards').expiration
@@ -1979,7 +1598,7 @@ exports.year = function ccExpYear () {
 
 function noop () {}
 
-},{"ap":1,"creditcards":6}],66:[function(_dereq_,module,exports){
+},{"ap":1,"creditcards":6}],56:[function(_dereq_,module,exports){
 'use strict'
 
 var card = _dereq_('creditcards').card
@@ -2074,21 +1693,20 @@ function factory ($parse) {
   }
 }
 
-},{"ap":1,"cast-array":2,"creditcards":6}],67:[function(_dereq_,module,exports){
+},{"ap":1,"cast-array":2,"creditcards":6}],57:[function(_dereq_,module,exports){
 'use strict'
 
-var get = _dereq_('lodash/object/get')
+var has = _dereq_('lodash/object/has')
+var keysIn = _dereq_('lodash/object/keysIn')
 var set = _dereq_('lodash/object/set')
-var assign = _dereq_('lodash/object/assign')
 var camel = _dereq_('lodash/string/camelCase')
-var start = _dereq_('lodash/string/startCase')
 var types = _dereq_('creditcards').card.types
 var Type = types.Type
 var cardTypes = types.types
 
 var _cvcTruncateMode = false
 var _storingLongValue = false
-var CVC_TRUNCATE_MODES = [ false, "eager", "conservative" ]
+var CVC_TRUNCATE_MODES = [ false, 'eager', 'conservative' ]
 
 module.exports = provider
 
@@ -2096,18 +1714,18 @@ function Service () {
   this.getCvcLength = function getCvcLength (type) {
     type = type || ''
     var cardType = types.get(type)
-    return get(cardType, 'cvcLength')
+    return cardType.cvcLength
   }
 
-  function _isConservative() {
+  function _isConservative () {
     return _cvcTruncateMode === 'conservative'
   }
 
-  function _isEager() {
-    return _cvcTruncateMode === 'eager'
-  }
+  // function _isEager () {
+  //   return _cvcTruncateMode === 'eager'
+  // }
 
-  function _isNoTruncate() {
+  function _isNoTruncate () {
     return !_cvcTruncateMode
   }
 
@@ -2166,23 +1784,26 @@ function Service () {
 function provider () {
   this.setType = function setType (name, config) {
     var key = camel(name)
-    name = start(name)
-    var oldType = get(cardTypes, key)
+    var oldType = types.get(name)
     if (oldType) {
-      assign(oldType, config)
+      keysIn(oldType).forEach(function (propKey) {
+        if (has(config, propKey)) {
+          set(oldType, propKey, config[propKey])
+        }
+      })
     } else {
       set(cardTypes, key, new Type(name, config))
     }
     return this
   }
 
-  //When ccType changes on ccCvc directive,
-  //_cvcTruncateMode determines modelValue/viewValue change behavior if the new
-  //maxLength is shorter.
-  //false -> ngModel.$viewValue && ngModel.$modelValue are unchanged
-  //"eager" -> ngModel.$viewValue && ngModel.$modelValue are truncated
-  //"conservative" -> ngModel.$viewValue is truncated and will change back to the
-  //ngModel.$modelValue if the maxLength is changed back to a greater value
+  // When ccType changes on ccCvc directive,
+  // _cvcTruncateMode determines modelValue/viewValue change behavior if the new
+  // maxLength is shorter.
+  // false -> ngModel.$viewValue && ngModel.$modelValue are unchanged
+  // "eager" -> ngModel.$viewValue && ngModel.$modelValue are truncated
+  // "conservative" -> ngModel.$viewValue is truncated and will change back to the
+  // ngModel.$modelValue if the maxLength is changed back to a greater value
   this.cvcTruncateMode = function cvcTruncateMode (mode) {
     if (CVC_TRUNCATE_MODES.indexOf(mode) > -1) {
       _cvcTruncateMode = mode
@@ -2195,7 +1816,7 @@ function provider () {
   }
 }
 
-},{"creditcards":6,"lodash/object/assign":45,"lodash/object/get":46,"lodash/object/set":49,"lodash/string/camelCase":50,"lodash/string/startCase":52}],68:[function(_dereq_,module,exports){
+},{"creditcards":6,"lodash/object/has":39,"lodash/object/keysIn":40,"lodash/object/set":41,"lodash/string/camelCase":42}],58:[function(_dereq_,module,exports){
 (function (global){
 'use strict'
 
@@ -2218,5 +1839,5 @@ module.exports = angular
   .name
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./cvc":64,"./expiration":65,"./number":66,"./type":67,"creditcards":6}]},{},[68])(68)
+},{"./cvc":54,"./expiration":55,"./number":56,"./type":57,"creditcards":6}]},{},[58])(58)
 });
