@@ -1,10 +1,9 @@
 'use strict'
 
-var get = require('lodash/object/get')
+var has = require('lodash/object/has')
+var keysIn = require('lodash/object/keysIn')
 var set = require('lodash/object/set')
-var assign = require('lodash/object/assign')
 var camel = require('lodash/string/camelCase')
-var start = require('lodash/string/startCase')
 var types = require('creditcards').card.types
 var Type = types.Type
 var cardTypes = types.types
@@ -19,7 +18,7 @@ function Service () {
   this.getCvcLength = function getCvcLength (type) {
     type = type || ''
     var cardType = types.get(type)
-    return get(cardType, 'cvcLength')
+    return cardType.cvcLength
   }
 
   function _isConservative () {
@@ -89,10 +88,13 @@ function Service () {
 function provider () {
   this.setType = function setType (name, config) {
     var key = camel(name)
-    name = start(name)
-    var oldType = get(cardTypes, key)
+    var oldType = types.get(name)
     if (oldType) {
-      assign(oldType, config)
+      keysIn(oldType).forEach(function (propKey) {
+        if (has(config, propKey)) {
+          set(oldType, propKey, config[propKey])
+        }
+      })
     } else {
       set(cardTypes, key, new Type(name, config))
     }
